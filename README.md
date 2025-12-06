@@ -325,21 +325,3 @@ python bot.py
 ```
 
 ---
-
-# 📜 Licença
-
-Este projeto é disponibilizado sob a licença MIT.
-Sinta-se livre para usar, estudar, modificar e melhorar.
-
----
-
-Se quiser, posso criar também:
-
-✅ estrutura de pastas
-✅ exemplo real de `models.py`
-✅ exemplo de WebSocket server
-✅ comandos do bot em Python
-✅ diagramas PNG para colocar no GitHub
-✅ documentação separada em arquivos (`docs/`)
-
-Só pedir!
