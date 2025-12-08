@@ -1,0 +1,22 @@
+{
+  "name": "sacibotdiscord",
+  "version": "0.0.1",
+  "description": "Sistema Automatico de Compras Instantaneas",
+  "keywords": [
+    "boletagem"
+  ],
+  "license": "MIT",
+  "author": "Gabriel Silva & Antony Braghiroli & Kaio Quevedo",
+  "type": "commonjs",
+  "main": "index.js",
+  "scripts": {
+    "test": "node index.js"
+  },
+  "dependencies": {
+    "discord.js": "^14.25.1"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.1",
+    "eslint": "^9.39.1"
+  }
+}
