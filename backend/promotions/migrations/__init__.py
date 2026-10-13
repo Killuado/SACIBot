@@ -1,0 +1,1 @@
+"""Migracoes do app promotions."""

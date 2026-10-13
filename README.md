@@ -2,6 +2,8 @@
 
 SACIBot é um sistema integrado composto por um **back-end em Python/Django** e um **bot do Discord**, projetado para monitorar promoções de marketplaces, lives promocionais e grupos do Telegram, identificar produtos desejados através de expressões regulares e **boletar automaticamente** ofertas que atendam ao interesse de cada usuário.
 
+> **Estado do projeto:** esta versão inicial implementa a API de watchlist, persistência de usuários/ofertas, correspondência por regex com limite de tempo e comandos Discord para adicionar, listar e remover itens. Coletores de marketplace/Telegram, notificações em tempo real, fila Celery e checkout ainda precisam ser implementados. Nenhuma compra é executada nesta base.
+
 O objetivo principal é automatizar todo o fluxo de descoberta, notificação e compra rápida de produtos em promoção.
 
 ---
@@ -304,24 +306,48 @@ Dados de promoções são purgados a cada 3 dias para evitar acúmulo.
 
 # 🚀 Como Rodar o Projeto
 
-### Back-end
+## Requisitos
+
+* Python 3.11 ou superior.
+* Um servidor de aplicação Discord criado no portal de desenvolvedores, para testar o bot.
+* PostgreSQL é opcional no desenvolvimento; a base usa SQLite por padrão.
+
+## Configuração local (PowerShell)
+
+Na raiz do repositório, copie `.env.example` para `.env` e configure um `BOT_API_TOKEN` aleatório. Para ativar o bot, preencha também `DISCORD_BOT_TOKEN`.
+
+### API Django
 
 ```bash
-git clone <repo>
-cd SACIBot/backend
-
+cd backend
+python -m venv .venv
+# Windows PowerShell:
+.venv\Scripts\Activate.ps1
 pip install -r requirements.txt
 python manage.py migrate
+python manage.py test
 python manage.py runserver
 ```
 
-### Bot do Discord
+API de saúde: `http://127.0.0.1:8000/health/`. A watchlist está em `/api/watchlist/` e usa o token de serviço configurado no `.env`.
+
+### Bot Discord
+
+Em outro terminal, na raiz do repositório:
 
 ```bash
-cd SACIBot/discord-bot
-
+cd discord-bot
+python -m venv .venv
+# Windows PowerShell:
+.venv\Scripts\Activate.ps1
 pip install -r requirements.txt
 python bot.py
 ```
+
+Os comandos disponíveis são `/watchlist add`, `/watchlist list` e `/watchlist remove`. O bot usa chamadas HTTP autenticadas para a API; o ID Discord do usuário vem da interação, e as respostas são privadas.
+
+### PostgreSQL
+
+Para usar PostgreSQL, habilite `DB_ENGINE=postgres` e preencha as variáveis `POSTGRES_*` no `.env`. SQLite continua sendo a opção padrão para desenvolvimento rápido.
 
 ---

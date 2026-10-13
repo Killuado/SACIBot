@@ -1,0 +1,1 @@
+"""Dominio de promocoes e watchlists do SACIBot."""

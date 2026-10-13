@@ -1,0 +1,69 @@
+SACIBot - Guia dos testes
+=========================
+
+O que os testes verificam
+-------------------------
+
+Os testes automatizados estao em backend/promotions/test_promotions.py. Eles usam o test runner do Django e um banco de dados temporario. Nao alteram o banco local db.sqlite3 e nao precisam do bot Discord, de um servidor PostgreSQL, do Supabase ou de uma conta em marketplace.
+
+1. test_creates_and_lists_items_for_discord_user
+   Envia uma requisicao para criar um item e depois consulta a watchlist. Verifica que a API aceita os dados validos, retorna HTTP 201 na criacao e lista o item criado para aquele usuario. Protege o fluxo principal da watchlist.
+
+2. test_rejects_invalid_regex
+   Tenta cadastrar uma expressao regular invalida. Verifica que a API responde HTTP 400 em vez de salvar um padrao que causaria erro durante a busca. Protege a validacao de entrada.
+
+3. test_requires_service_token
+   Consulta a API sem o token interno do bot. Verifica que a requisicao e recusada com HTTP 403. Protege o acesso aos endpoints da watchlist.
+
+4. test_item_can_only_be_removed_by_its_owner
+   Tenta remover o item de uma pessoa usando o ID Discord de outra. Verifica que a API responde HTTP 404 e que o item continua salvo. Protege os dados de cada usuario contra remocao por terceiros.
+
+5. test_matches_regex_and_respects_maximum_price
+   Cria watchlists e uma promocao de exemplo. Verifica que a expressao correspondente e o limite de preco selecionam o item correto, e que uma watchlist fora desses criterios nao e retornada. Protege a regra central de correspondencia.
+
+Como executar no Windows PowerShell
+-----------------------------------
+
+Execute a partir da pasta raiz do repositorio: aquela que contem README.md e as pastas backend e discord-bot.
+
+Se uv estiver no PATH:
+
+    uv run --with-requirements requirements.txt --directory backend python manage.py test
+
+Se o PowerShell disser que uv nao e reconhecido, use o caminho do executavel instalado no perfil do usuario:
+
+    $uv = "$HOME\.local\bin\uv.exe"
+    & $uv run --with-requirements requirements.txt --directory backend python manage.py test
+
+O argumento requirements.txt e relativo a backend porque o comando usa --directory backend.
+
+O uv prepara um ambiente com as dependencias listadas em backend/requirements.txt. Na primeira execucao, pode ser necessario ter acesso a internet para baixar as dependencias. Os testes nao iniciam o servidor web; depois que terminarem, o banco temporario e descartado.
+
+Como interpretar o resultado
+----------------------------
+
+Uma execucao aprovada deve terminar com algo semelhante a:
+
+    Found 5 test(s).
+    Ran 5 tests ...
+    OK
+
+Se aparecer "System check identified no issues", significa que o Django tambem nao encontrou problemas de configuracao durante a verificacao.
+
+Executar apenas um grupo de testes
+----------------------------------
+
+Para executar apenas os testes da API:
+
+    & $uv run --with-requirements requirements.txt --directory backend python manage.py test promotions.test_promotions.WatchlistApiTests
+
+Para executar apenas o teste de correspondencia:
+
+    & $uv run --with-requirements requirements.txt --directory backend python manage.py test promotions.test_promotions.WatchlistMatchingTests
+
+Se uv estiver no PATH, remova "& $uv" do inicio desses comandos e comece com "uv".
+
+O que ainda nao e testado
+-------------------------
+
+Esta suite cobre a API e as regras atuais da watchlist. Ela nao testa comandos reais no Discord, scraping de marketplaces, Telegram, WebSocket, Celery, retentativas de estoque ou checkout, pois essas integracoes ainda nao foram implementadas nesta base.
