@@ -346,6 +346,24 @@ python bot.py
 
 Os comandos disponíveis são `/watchlist add`, `/watchlist list` e `/watchlist remove`. O bot usa chamadas HTTP autenticadas para a API; o ID Discord do usuário vem da interação, e as respostas são privadas.
 
+### Interface web
+
+Requer Node.js 20.19 ou superior. Em um terminal na raiz do repositório:
+
+```powershell
+npm.cmd --prefix frontend install
+npm.cmd --prefix frontend run dev
+```
+
+Abra `http://localhost:5173/`. A interface atual é um protótipo local: ofertas são ilustrativas e a watchlist fica salva no navegador. Ela ainda não se conecta à API Django; o token interno do bot não deve ser exposto no frontend.
+
+Para validar o frontend:
+
+```powershell
+npm.cmd --prefix frontend run build
+npm.cmd --prefix frontend run lint
+```
+
 ### PostgreSQL
 
 Para usar PostgreSQL, habilite `DB_ENGINE=postgres` e preencha as variáveis `POSTGRES_*` no `.env`. SQLite continua sendo a opção padrão para desenvolvimento rápido.

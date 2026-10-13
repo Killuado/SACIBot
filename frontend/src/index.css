@@ -1,0 +1,44 @@
+@import '@fontsource-variable/space-grotesk';
+
+:root {
+  font-family: 'Space Grotesk Variable', 'Segoe UI', sans-serif;
+  color: #f1f0e8;
+  background: #111411;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-optical-sizing: auto;
+  font-weight: 400;
+  --page: #111411;
+  --panel: #191d19;
+  --panel-raised: #20251f;
+  --line: #2c322b;
+  --muted: #8e968a;
+  --soft: #b6bdb0;
+  --text: #f1f0e8;
+  --lime: #c7ed63;
+  --coral: #ff7864;
+  --blue: #87b8ff;
+  --font: 'Space Grotesk Variable', 'Segoe UI', sans-serif;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  min-width: 360px;
+  min-height: 100vh;
+  margin: 0;
+  background:
+    radial-gradient(ellipse at 72% -14%, rgba(147, 173, 97, 0.08), transparent 37rem),
+    linear-gradient(180deg, #121612 0%, #101310 100%);
+}
+
+button, input { font: inherit; }
+button { color: inherit; }
+button:focus-visible, input:focus-visible {
+  outline: 2px solid var(--lime);
+  outline-offset: 4px;
+}
+
+::selection { color: #101310; background: var(--lime); }
