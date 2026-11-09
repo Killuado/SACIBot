@@ -29,6 +29,7 @@ services:
       - .env
     environment:
       - DJANGO_ALLOWED_HOSTS=localhost,127.0.0.1,api
+      - BOT_NOTIFY_URL=http://discord-bot:8001/notify
       - DB_ENGINE=${DB_ENGINE:-postgres}
       - POSTGRES_DB=${POSTGRES_DB:-sacibot}
       - POSTGRES_USER=${POSTGRES_USER:-sacibot}
@@ -57,6 +58,7 @@ services:
       - .env
     environment:
       - RUN_MIGRATIONS=false
+      - BOT_NOTIFY_URL=http://discord-bot:8001/notify
       - DB_ENGINE=${DB_ENGINE:-postgres}
       - POSTGRES_DB=${POSTGRES_DB:-sacibot}
       - POSTGRES_USER=${POSTGRES_USER:-sacibot}

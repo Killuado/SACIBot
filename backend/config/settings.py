@@ -66,6 +66,7 @@ REST_FRAMEWORK = {
 }
 
 BOT_API_TOKEN = os.getenv("BOT_API_TOKEN", "")
+BOT_NOTIFY_URL = os.getenv("BOT_NOTIFY_URL", "http://127.0.0.1:8001/notify")
 DISCORD_ADMIN_IDS = {
     uid.strip()
     for uid in (

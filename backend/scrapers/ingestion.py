@@ -7,7 +7,7 @@ from dataclasses import dataclass, field
 from typing import Literal
 
 from promotions.models import Promotion, WatchlistItem
-from promotions.services import matching_watchlists
+from promotions.services import matching_watchlists, send_bot_notification
 
 from .base import BaseScraper, ScraperError
 from .links import clean_url
@@ -65,6 +65,7 @@ def ingest_url(
             "title": data["title"][:300],
             "price": data["price"],
             "marketplace": data["marketplace"][:80],
+            "image_url": (data.get("image_url") or "")[:2000],
             "source": source[:120],
             "in_stock": data["in_stock"],
         },
@@ -81,10 +82,19 @@ def ingest_url(
     if is_news and promotion.in_stock is not False:
         matches = matching_watchlists(promotion)
         if matches:
-            # TODO: enviar ao bot do Discord (WebSocket) quando o canal existir.
             logger.info(
                 "Promoção %s corresponde a %d watchlist(s)", promotion.pk, len(matches)
             )
+            ready_ids = {
+                item.pk for item in matching_watchlists(promotion, require_user_readiness=True)
+            }
+            for item in matches:
+                if item.pk in ready_ids:
+                    send_bot_notification(
+                        discord_user_id=item.user.discord_id,
+                        promotion=promotion,
+                        watchlist_item=item,
+                    )
 
     return IngestionResult(
         url=final_url,

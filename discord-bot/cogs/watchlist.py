@@ -12,6 +12,19 @@ class Watchlist(commands.GroupCog, group_name="watchlist"):
         self.api_url = os.getenv("BACKEND_API_URL", "http://127.0.0.1:8000")
         self.api_token = os.getenv("BOT_API_TOKEN", "")
 
+    def get_admin_ids(self):
+        raw = (
+            os.getenv("DISCORD_ADMIN_IDS")
+            or os.getenv("ADMIN_USER_IDS")
+            or os.getenv("ADMIN_DISCORD_IDS")
+            or ""
+        )
+        return [
+            int(x.strip())
+            for x in raw.split(",")
+            if x.strip().isdigit()
+        ]
+
     def request_headers(self, discord_user_id):
         return {
             "X-Bot-Token": self.api_token,
@@ -61,10 +74,26 @@ class Watchlist(commands.GroupCog, group_name="watchlist"):
                 ephemeral=True,
             )
             return
-        await interaction.followup.send(
-            f"Watchlist #{result['id']} adicionada: `{result['pattern']}` até R$ {result['max_price']}.",
-            ephemeral=True,
-        )
+
+        user_status = result.get("user_status", {})
+        has_address = user_status.get("has_address", True)
+        has_marketplaces = user_status.get("has_marketplaces", True)
+
+        msg = f"Watchlist #{result['id']} adicionada: `{result['pattern']}` até R$ {result['max_price']}."
+
+        missing = []
+        if not has_address:
+            missing.append("• **Endereço**: cadastre com `/endereco set`")
+        if not has_marketplaces:
+            missing.append("• **Lojas preferidas**: cadastre com `/marketplace allow add <canal>`")
+
+        if missing:
+            msg += (
+                "\n\n⚠️ **Atenção:** O bot só verificará a sua watchlist e boletará produtos quando você configurar:\n"
+                + "\n".join(missing)
+            )
+
+        await interaction.followup.send(msg, ephemeral=True)
 
     @app_commands.command(name="list", description="Lista seus produtos monitorados")
     async def list_items(self, interaction: discord.Interaction):
@@ -106,3 +135,79 @@ class Watchlist(commands.GroupCog, group_name="watchlist"):
         else:
             message = f"Watchlist #{item_id} removida."
         await interaction.followup.send(message, ephemeral=True)
+
+    @app_commands.command(
+        name="clear_all",
+        description="[ADMIN] Limpa TODA a watchlist de todos os usuários",
+    )
+    async def clear_all(self, interaction: discord.Interaction):
+        admin_ids = self.get_admin_ids()
+        if interaction.user.id not in admin_ids:
+            await interaction.response.send_message(
+                "Você não tem permissão de usar esse comando.",
+                ephemeral=True,
+            )
+            return
+
+        await interaction.response.defer(ephemeral=True)
+
+        if not self.api_token:
+            await interaction.followup.send(
+                "Token da API não configurado.",
+                ephemeral=True,
+            )
+            return
+
+        headers = {
+            "X-Bot-Token": self.api_token,
+            "X-Discord-User-ID": str(interaction.user.id),
+        }
+        try:
+            async with aiohttp.ClientSession() as session:
+                async with session.request(
+                    "DELETE",
+                    f"{self.api_url}/api/watchlist/clear-all/",
+                    headers=headers,
+                    timeout=aiohttp.ClientTimeout(total=15),
+                ) as response:
+                    if response.status >= 400:
+                        await interaction.followup.send(
+                            f"Erro da API: {response.status}",
+                            ephemeral=True,
+                        )
+                        return
+                    data = await response.json()
+                    deleted = data.get("deleted", 0)
+                    await interaction.followup.send(
+                        f"🗑️ Watchlist limpa! **{deleted}** item(ns) removido(s) de todos os usuários.",
+                        ephemeral=True,
+                    )
+        except aiohttp.ClientError:
+            await interaction.followup.send(
+                "Não foi possível conectar à API.",
+                ephemeral=True,
+            )
+
+    @app_commands.command(
+        name="test_alert",
+        description="Dispara um alerta de teste por DM para verificar a integração em tempo real",
+    )
+    async def test_alert(self, interaction: discord.Interaction):
+        await interaction.response.defer(ephemeral=True)
+        result = await self.request(
+            interaction,
+            "POST",
+            "/api/promotions/test-notify/",
+            json={"discord_user_id": str(interaction.user.id)},
+        )
+        if not result or "_error" in result:
+            await interaction.followup.send(
+                "❌ Não foi possível disparar o alerta de teste. Verifique se o servidor Django está ativo.",
+                ephemeral=True,
+            )
+            return
+
+        await interaction.followup.send(
+            "📬 Alerta de teste disparado pelo back-end! Verifique a sua DM com o SACIBot.",
+            ephemeral=True,
+        )
