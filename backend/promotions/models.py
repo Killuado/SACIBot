@@ -33,7 +33,11 @@ class Promotion(models.Model):
     url = models.URLField(max_length=2000, unique=True)
     marketplace = models.CharField(max_length=80)
     source = models.CharField(max_length=120, blank=True)
-    discovered_at = models.DateTimeField(auto_now_add=True)
+    discovered_at = models.DateTimeField(auto_now_add=True, db_index=True)
+    # Atualizado a cada nova consulta de preço/estoque.
+    last_checked_at = models.DateTimeField(auto_now=True)
+    # None = a página não informou disponibilidade.
+    in_stock = models.BooleanField(null=True, blank=True)
 
     class Meta:
         ordering = ["-discovered_at"]
