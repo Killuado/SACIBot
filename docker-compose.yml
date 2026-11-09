@@ -21,6 +21,9 @@ services:
       context: ./backend
       dockerfile: Dockerfile
       target: api
+      platforms:
+        - linux/amd64
+        - linux/arm64
     container_name: sacibot-api
     env_file:
       - .env
@@ -46,6 +49,9 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile.live-monitor
+      platforms:
+        - linux/amd64
+        - linux/arm64
     container_name: sacibot-live-monitor
     env_file:
       - .env
@@ -71,6 +77,9 @@ services:
     build:
       context: ./discord-bot
       dockerfile: Dockerfile
+      platforms:
+        - linux/amd64
+        - linux/arm64
     container_name: sacibot-discord-bot
     env_file:
       - .env
