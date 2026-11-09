@@ -13,4 +13,5 @@ def health_check(request):
 urlpatterns = [
     path("health/", health_check, name="health-check"),
     path("api/", include("promotions.urls")),
+    path("api/youtube/", include("lives.urls")),
 ]

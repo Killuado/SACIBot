@@ -14,3 +14,12 @@ class HasBotServiceToken(BasePermission):
             configured_token,
             provided_token,
         )
+
+
+class IsDiscordAdmin(BasePermission):
+    message = "Você não tem permissão de usar esse comando."
+
+    def has_permission(self, request, view):
+        admin_ids = set(getattr(settings, "DISCORD_ADMIN_IDS", set()) or set())
+        discord_id = (request.headers.get("X-Discord-User-ID") or "").strip()
+        return bool(admin_ids and discord_id and discord_id in admin_ids)
