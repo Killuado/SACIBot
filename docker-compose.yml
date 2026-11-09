@@ -16,7 +16,7 @@ services:
     restart: unless-stopped
 
   api:
-    image: ${DOCKERHUB_USER:-local}/sacibot-api:${IMAGE_TAG:-latest}
+    image: ${DOCKERHUB_USER:-killuado}/sacibot-api:${IMAGE_TAG:-latest}
     build:
       context: ./backend
       dockerfile: Dockerfile
@@ -42,7 +42,7 @@ services:
     restart: unless-stopped
 
   live-monitor:
-    image: ${DOCKERHUB_USER:-local}/sacibot-live-monitor:${IMAGE_TAG:-latest}
+    image: ${DOCKERHUB_USER:-killuado}/sacibot-live-monitor:${IMAGE_TAG:-latest}
     build:
       context: ./backend
       dockerfile: Dockerfile.live-monitor
@@ -67,7 +67,7 @@ services:
     restart: unless-stopped
 
   discord-bot:
-    image: ${DOCKERHUB_USER:-local}/sacibot-discord-bot:${IMAGE_TAG:-latest}
+    image: ${DOCKERHUB_USER:-killuado}/sacibot-discord-bot:${IMAGE_TAG:-latest}
     build:
       context: ./discord-bot
       dockerfile: Dockerfile
