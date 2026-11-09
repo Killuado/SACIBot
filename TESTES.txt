@@ -67,3 +67,16 @@ O que ainda nao e testado
 -------------------------
 
 Esta suite cobre a API e as regras atuais da watchlist. Ela nao testa comandos reais no Discord, scraping de marketplaces, Telegram, WebSocket, Celery, retentativas de estoque ou checkout, pois essas integracoes ainda nao foram implementadas nesta base.
+
+Testes de Scrapers, Ingestao e Lives do YouTube
+-----------------------------------------------
+
+Alem de promotions/test_promotions.py, a suite inclui:
+
+- backend/scrapers/test_scrapers.py: extracao JSON-LD/OpenGraph, bloqueio de IPs privados (SSRF), cache TTL de URLs (TtlUrlCache), pipeline de ingestao (ingest_url), monitor do Telegram e comando purge_old_promotions.
+- backend/lives/test_lives.py: normalizacao de canais/lives do YouTube, deteccao de status ao vivo, parser innertube do chat ao vivo (incluindo links truncados, redirects do YouTube e banners fixados), leitor assincrono de chat, supervisor YouTubeLiveMonitor, API /api/youtube/sources/ e comando youtube_sources.
+
+Para rodar toda a suite com a virtualenv local do backend:
+
+    cd backend
+    .venv\Scripts\python.exe manage.py test

@@ -1,0 +1,52 @@
+services:
+  api:
+    image: ${DOCKERHUB_USER:-local}/sacibot-api:${IMAGE_TAG:-latest}
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+      target: api
+    container_name: sacibot-api
+    env_file:
+      - .env
+    environment:
+      - DJANGO_ALLOWED_HOSTS=localhost,127.0.0.1,api
+      - SQLITE_PATH=/app/data/db.sqlite3
+    ports:
+      - "8000:8000"
+    volumes:
+      - sacibot_data:/app/data
+    restart: unless-stopped
+
+  live-monitor:
+    image: ${DOCKERHUB_USER:-local}/sacibot-live-monitor:${IMAGE_TAG:-latest}
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.live-monitor
+    container_name: sacibot-live-monitor
+    env_file:
+      - .env
+    environment:
+      - RUN_MIGRATIONS=false
+      - SQLITE_PATH=/app/data/db.sqlite3
+    volumes:
+      - sacibot_data:/app/data
+    depends_on:
+      - api
+    restart: unless-stopped
+
+  discord-bot:
+    image: ${DOCKERHUB_USER:-local}/sacibot-discord-bot:${IMAGE_TAG:-latest}
+    build:
+      context: ./discord-bot
+      dockerfile: Dockerfile
+    container_name: sacibot-discord-bot
+    env_file:
+      - .env
+    environment:
+      - BACKEND_API_URL=http://api:8000
+    depends_on:
+      - api
+    restart: unless-stopped
+
+volumes:
+  sacibot_data:

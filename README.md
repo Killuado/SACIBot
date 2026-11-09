@@ -368,4 +368,45 @@ npm.cmd --prefix frontend run lint
 
 Para usar PostgreSQL, habilite `DB_ENGINE=postgres` e preencha as variáveis `POSTGRES_*` no `.env`. SQLite continua sendo a opção padrão para desenvolvimento rápido.
 
+### Scrapers e ingestão
+
+Os coletores ficam em `backend/scrapers/`. Todos seguem a interface `BaseScraper` (`parse_url` e `check_stock_and_price`). O scraper genérico `JsonLdScraper` usa httpx + BeautifulSoup e lê os metadados `application/ld+json` (`Product`/`Offer`), com OpenGraph como alternativa. Ele não abre navegador.
+
+```bash
+cd backend
+# Testar a extração de uma página (não grava nada)
+python manage.py scrape_url "https://www.kabum.com.br/produto/520369"
+# Raspar, gravar a promoção e aplicar as watchlists
+python manage.py scrape_url "<url>" --save
+
+# Ouvir canais do Telegram (requer TELEGRAM_API_ID/HASH e TELEGRAM_CHANNELS no .env)
+python manage.py run_telegram_monitor
+
+# Apagar promoções com mais de 3 dias (agende no cron/systemd timer)
+python manage.py purge_old_promotions [--days 3] [--dry-run]
+```
+
+Na primeira execução do monitor do Telegram, o Telethon pede o telefone e o código de login. A sessão fica salva em `sacibot_telegram.session`. Não versione esse arquivo. Links que apontam para redes privadas ou locais são bloqueados.
+
+### Monitor de Lives do YouTube
+
+O app `backend/lives/` verifica periodicamente os canais cadastrados (ou lives avulsas) e, quando encontra uma transmissão ao vivo, conecta ao chat em tempo real via innertube (sem precisar de chave da YouTube Data API). Os links enviados no chat passam por um filtro de autor (por padrão apenas dono do canal, moderadores e verificados) e por um cache com TTL (`YOUTUBE_LINK_TTL_SECONDS`, padrão 180s) para ignorar spam de links repetidos antes de acionar o scraper de produto e comparar com as watchlists.
+
+```bash
+cd backend
+# Cadastrar canal de loja (monitorado sempre que entrar ao vivo)
+python manage.py youtube_sources add @kabum
+# Cadastrar uma live específica acontecendo agora (desativada automaticamente quando acabar)
+python manage.py youtube_sources add "https://www.youtube.com/watch?v=XXXXXXXXXXX"
+# Listar, desativar, ativar ou remover fontes
+python manage.py youtube_sources list
+python manage.py youtube_sources disable <id>
+python manage.py youtube_sources remove <id>
+
+# Iniciar o supervisor de lives e leitores de chat
+python manage.py run_youtube_monitor
+```
+
+No Discord, administradores do servidor também podem gerenciar as fontes com `/youtube add`, `/youtube list` e `/youtube remove`.
+
 ---
