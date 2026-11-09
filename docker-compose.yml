@@ -1,4 +1,20 @@
 services:
+  postgres:
+    image: postgres:17-alpine
+    container_name: sacibot-postgres
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-sacibot}
+      POSTGRES_USER: ${POSTGRES_USER:-sacibot}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-sacibot}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER:-sacibot} -d $${POSTGRES_DB:-sacibot}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
   api:
     image: ${DOCKERHUB_USER:-local}/sacibot-api:${IMAGE_TAG:-latest}
     build:
@@ -10,11 +26,19 @@ services:
       - .env
     environment:
       - DJANGO_ALLOWED_HOSTS=localhost,127.0.0.1,api
-      - SQLITE_PATH=/app/data/db.sqlite3
+      - DB_ENGINE=${DB_ENGINE:-postgres}
+      - POSTGRES_DB=${POSTGRES_DB:-sacibot}
+      - POSTGRES_USER=${POSTGRES_USER:-sacibot}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-sacibot}
+      - POSTGRES_HOST=${POSTGRES_HOST:-postgres}
+      - POSTGRES_PORT=${POSTGRES_PORT:-5432}
     ports:
       - "8000:8000"
     volumes:
       - sacibot_data:/app/data
+    depends_on:
+      postgres:
+        condition: service_healthy
     restart: unless-stopped
 
   live-monitor:
@@ -27,11 +51,19 @@ services:
       - .env
     environment:
       - RUN_MIGRATIONS=false
-      - SQLITE_PATH=/app/data/db.sqlite3
+      - DB_ENGINE=${DB_ENGINE:-postgres}
+      - POSTGRES_DB=${POSTGRES_DB:-sacibot}
+      - POSTGRES_USER=${POSTGRES_USER:-sacibot}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-sacibot}
+      - POSTGRES_HOST=${POSTGRES_HOST:-postgres}
+      - POSTGRES_PORT=${POSTGRES_PORT:-5432}
     volumes:
       - sacibot_data:/app/data
     depends_on:
-      - api
+      postgres:
+        condition: service_healthy
+      api:
+        condition: service_started
     restart: unless-stopped
 
   discord-bot:
@@ -49,4 +81,5 @@ services:
     restart: unless-stopped
 
 volumes:
+  postgres_data:
   sacibot_data:
