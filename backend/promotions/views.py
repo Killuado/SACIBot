@@ -5,7 +5,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from .models import Address, DiscordUser, MarketplaceChannel, Promotion, WatchlistItem
-from .permissions import HasBotServiceToken
+from .permissions import HasBotServiceToken, IsDiscordAdmin
 from .serializers import (
     AddressSerializer,
     MarketplaceChannelSerializer,
@@ -62,7 +62,7 @@ class WatchlistItemView(BaseDiscordUserView):
 class WatchlistClearAllView(APIView):
     """Admin endpoint: limpa TODA a watchlist de todos os usuários e reseta o ID para 1."""
 
-    permission_classes = [HasBotServiceToken]
+    permission_classes = [HasBotServiceToken, IsDiscordAdmin]
 
     def delete(self, request):
         deleted, _ = WatchlistItem.objects.all().delete()
